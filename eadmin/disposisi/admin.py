@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import Agency, WorkUnit, Position, Account, Attachment, MemoState, MemoType, MemoTrait, MemoCategory, Memo
+from .models import Agency, WorkUnit, Position, Account, Attachment, MemoState, MemoType, MemoTrait, MemoCategory, Memo, \
+    MemoSimple
 
 
 # Register your models here.
@@ -40,7 +41,7 @@ class MemoCategoryAdmin(admin.ModelAdmin):
 
 class MemoAdmin(admin.ModelAdmin):
     list_display = (
-        'subject', 'information', 'memo_state', 'sender', 'author', 'type', 'trait', 'category', 'created_at',
+        'subject', 'information', 'state', 'sender', 'author', 'type', 'trait', 'category', 'created_at',
         'updated_at')
 
 
@@ -58,3 +59,4 @@ admin.site.register(MemoTrait, MemoTraitAdmin)
 admin.site.register(MemoCategory, MemoCategoryAdmin)
 admin.site.register(Memo, MemoAdmin)
 admin.site.register(Attachment, AttachmentAdmin)
+admin.site.register(MemoSimple)

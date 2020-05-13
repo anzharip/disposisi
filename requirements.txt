@@ -1,5 +1,10 @@
 asgiref==3.2.7
 Django==3.0.6
+django-codemirror2==0.2
+django-cte==1.1.4
+django-fsm==2.7.0
+django-js-asset==1.2.2
+django-mptt==0.9.1
 psycopg2==2.8.5
 pytz==2020.1
 sqlparse==0.3.1

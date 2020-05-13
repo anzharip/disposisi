@@ -1,0 +1,16 @@
+<h1>MemoSimple</h1>
+<p>Subject: {{ object.subject }}</p>
+<p>Information: {{ object.information }}</p>
+<p>State: {{ object.state }}</p>
+<p>Sender: {{ object.sender }}</p>
+<p>
+    <button><a href="{% url 'disposisi:memo-simple-update' memosimple.id %}">Edit</a></button>
+</p>
+<form action="{% url 'disposisi:memo-simple-update-state' object.id %}" method="post">
+    {% csrf_token %}
+    {% for state in object.STATUS_CHOICES %}
+        <input type="radio" name="state" id="state{{ forloop.counter }}" value="{{ state.0 }}">
+        <label for="state{{ forloop.counter }}">{{ state.1 }}</label><br>
+    {% endfor %}
+    <input type="submit" value="Vote">
+</form>

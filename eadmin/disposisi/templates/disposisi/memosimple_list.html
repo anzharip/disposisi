@@ -1,0 +1,10 @@
+<h1>MemoSimples</h1>
+<ul>
+    {% for memosimple in object_list %}
+        <li><a href="{% url 'disposisi:memo-simple-detail' memosimple.id %}">{{ memosimple.id }}
+            - {{ memosimple.subject }} - {{ memosimple.information }} - {{ memosimple.state }}
+            - {{ memosimple.sender }}</a></li>
+    {% empty %}
+        <li>No memosimple yet.</li>
+    {% endfor %}
+</ul>
