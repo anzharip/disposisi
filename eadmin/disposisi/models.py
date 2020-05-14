@@ -157,6 +157,11 @@ class MemoSimple(models.Model):
         (STATUS_DISPOSISI_KASUBAG, 'Disposisi Kasubag'),
         (STATUS_DISPOSISI_PELAKSANA, 'Disposisi Pelaksana'),
     )
+    STATUS_TRANSITIONS = (
+        (0, 'status_perekaman_surat_to_status_distribusi_kabag'),
+        (1, 'status_distribusi_kabag_to_status_disposisi_kasubag'),
+        (2, 'status_disposisi_kasubag_to_status_disposisi_pelaksana'),
+    )
     subject = models.CharField(max_length=255)
     information = models.CharField(max_length=255)
     state = FSMIntegerField(choices=STATUS_CHOICES, default=STATUS_PEREKAMAN_SURAT, protected=True)
