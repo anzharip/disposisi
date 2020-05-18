@@ -11,6 +11,7 @@ class MemoSimpleSerializer(serializers.ModelSerializer):
         fields = ['id', 'subject', 'information', 'state', 'sender', ]
         read_only_fields = ['state', ]
 
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

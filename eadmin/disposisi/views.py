@@ -34,14 +34,14 @@ class MemoSimpleUpdateView(generic.UpdateView):
     template_name_suffix = '_update_form'
 
 
-class UserDetailView(generics.RetrieveAPIView):
+class UserInfoView(APIView):
     permission_classes = (IsAuthenticated,)
-    # queryset = User.objects.all()
-    serializer_class = UserSerializer
 
-    def get_queryset(self):
+    def get(self, request):
         user_id = self.request.user.id
-        return User.objects.filter(pk=user_id)
+        user_info = get_object_or_404(User, pk=user_id)
+        serializer = UserSerializer(user_info)
+        return Response(serializer.data)
 
 
 def memo_simple_update_state(request, pk):
