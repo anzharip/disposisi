@@ -1,9 +1,9 @@
 from django.shortcuts import get_object_or_404
 from django.views import generic
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -12,6 +12,35 @@ from django_fsm import TransitionNotAllowed
 
 from .serializers import MemoSimpleSerializer, UserSerializer
 from .models import MemoSimple
+
+
+def _is_in_group(user, group_name):
+    """
+    Takes a user and a group name, and returns `True` if the user is in that group.
+    """
+    try:
+        return Group.objects.get(name=group_name).user_set.filter(id=user.id).exists()
+    except Group.DoesNotExist:
+        return None
+
+
+def _has_group_permission(user, required_groups):
+    return any([_is_in_group(user, group_name) for group_name in required_groups])
+
+
+class IsGroupOperasional(permissions.BasePermission):
+    """
+    """
+
+    required_groups = ['operasional']
+
+    def has_permission(self, request, view):
+        has_group_permission = _has_group_permission(request.user, self.required_groups)
+        return request.user and has_group_permission
+
+    def has_object_permission(self, request, view, obj):
+        has_group_permission = _has_group_permission(request.user, self.required_groups)
+        return request.user and has_group_permission
 
 
 # Create your views here.
@@ -63,6 +92,8 @@ class MemoSimpleDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 # TODO Implement this endpoint dynamically
 # TODO Implement the frontend, serve it from django, but it could be SPA
 class MemoSimpleUpdateStateAPIView(APIView):
+    permission_classes = (IsAuthenticated, IsGroupOperasional,)
+
     def put(self, request, pk):
         memo_simple = get_object_or_404(MemoSimple, pk=pk)
         try:
