@@ -24,7 +24,7 @@ SECRET_KEY = '98!w7p3rmmyeh$t-78x(sn^y#)klpms1n0rc=5yxc%23p6=aqi'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['django.eadmin.local']
 
 # Application definition
 
@@ -41,9 +41,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -125,5 +125,12 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # django-cors-headers configuration
 CORS_ORIGIN_WHITELIST = [
-    'http://localhost:63343',
+    'http://django.eadmin.local:3000',
 ]
+
+# django-rest-framework configuration
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}

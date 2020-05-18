@@ -5,6 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 from django_fsm import TransitionNotAllowed
 
@@ -43,6 +44,7 @@ class MemoSimpleListAPIView(generics.ListCreateAPIView):
 
 
 class MemoSimpleDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    # permission_classes = (IsAuthenticated,)
     queryset = MemoSimple.objects.all()
     serializer_class = MemoSimpleSerializer
 
@@ -50,32 +52,36 @@ class MemoSimpleDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 # TODO Implement this endpoint dynamically
 # TODO Implement the frontend, serve it from django, but it could be SPA
 class MemoSimpleUpdateStateAPIView(APIView):
-
     def put(self, request, pk):
         memo_simple = get_object_or_404(MemoSimple, pk=pk)
-        if request.data['transition'] == '0':
-            try:
-                memo_simple.status_perekaman_surat_to_status_distribusi_kabag()
-            except TransitionNotAllowed as e:
-                return Response({'message': 'Transition is not allowed'}, status=status.HTTP_400_BAD_REQUEST)
-            memo_simple.save()
-            serializer = MemoSimpleSerializer(memo_simple)
-            return Response(serializer.data)
-        if request.data['transition'] == '1':
-            try:
-                memo_simple.status_distribusi_kabag_to_status_disposisi_kasubag()
-            except TransitionNotAllowed as e:
-                return Response({'message': 'Transition is not allowed'}, status=status.HTTP_400_BAD_REQUEST)
-            memo_simple.save()
-            serializer = MemoSimpleSerializer(memo_simple)
-            return Response(serializer.data)
-        if request.data['transition'] == '2':
-            try:
-                memo_simple.status_disposisi_kasubag_to_status_disposisi_pelaksana()
-            except TransitionNotAllowed as e:
-                return Response({'message': 'Transition is not allowed'}, status=status.HTTP_400_BAD_REQUEST)
-            memo_simple.save()
-            serializer = MemoSimpleSerializer(memo_simple)
-            return Response(serializer.data)
-        else:
-            return Response({'message': 'transition is not valid'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            if request.data['transition'] == '0':
+                try:
+                    memo_simple.status_perekaman_surat_to_status_distribusi_kabag()
+                except TransitionNotAllowed as e:
+                    return Response({'message': 'Transition is not allowed'}, status=status.HTTP_400_BAD_REQUEST)
+                memo_simple.save()
+                serializer = MemoSimpleSerializer(memo_simple)
+                return Response(serializer.data)
+            if request.data['transition'] == '1':
+                try:
+                    memo_simple.status_distribusi_kabag_to_status_disposisi_kasubag()
+                except TransitionNotAllowed as e:
+                    return Response({'message': 'Transition is not allowed'}, status=status.HTTP_400_BAD_REQUEST)
+                memo_simple.save()
+                serializer = MemoSimpleSerializer(memo_simple)
+                return Response(serializer.data)
+            if request.data['transition'] == '2':
+                try:
+                    memo_simple.status_disposisi_kasubag_to_status_disposisi_pelaksana()
+                except TransitionNotAllowed as e:
+                    return Response({'message': 'Transition is not allowed'}, status=status.HTTP_400_BAD_REQUEST)
+                memo_simple.save()
+                serializer = MemoSimpleSerializer(memo_simple)
+                return Response(serializer.data)
+            else:
+                return Response({'message': 'transition is not valid'}, status=status.HTTP_400_BAD_REQUEST)
+        except KeyError as e:
+            return Response({'message': 'transition is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+
