@@ -28,11 +28,9 @@ def _has_group_permission(user, required_groups):
     return any([_is_in_group(user, group_name) for group_name in required_groups])
 
 
-class IsGroupOperasional(permissions.BasePermission):
+class GroupBasePermission(permissions.BasePermission):
     """
     """
-
-    required_groups = ['operasional']
 
     def has_permission(self, request, view):
         has_group_permission = _has_group_permission(request.user, self.required_groups)
@@ -41,6 +39,13 @@ class IsGroupOperasional(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         has_group_permission = _has_group_permission(request.user, self.required_groups)
         return request.user and has_group_permission
+
+
+class IsGroupOperasional(GroupBasePermission):
+    """
+    """
+
+    required_groups = ['operasional']
 
 
 # Create your views here.
