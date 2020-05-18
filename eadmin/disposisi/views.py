@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.views import generic
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -9,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from django_fsm import TransitionNotAllowed
 
-from .serializers import MemoSimpleSerializer
+from .serializers import MemoSimpleSerializer, UserSerializer
 from .models import MemoSimple
 
 
@@ -33,6 +34,16 @@ class MemoSimpleUpdateView(generic.UpdateView):
     template_name_suffix = '_update_form'
 
 
+class UserDetailView(generics.RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+    # queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        user_id = self.request.user.id
+        return User.objects.filter(pk=user_id)
+
+
 def memo_simple_update_state(request, pk):
     memo_simple = get_object_or_404(MemoSimple, pk=pk)
 
@@ -44,7 +55,7 @@ class MemoSimpleListAPIView(generics.ListCreateAPIView):
 
 
 class MemoSimpleDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
-    # permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
     queryset = MemoSimple.objects.all()
     serializer_class = MemoSimpleSerializer
 
@@ -83,5 +94,3 @@ class MemoSimpleUpdateStateAPIView(APIView):
                 return Response({'message': 'transition is not valid'}, status=status.HTTP_400_BAD_REQUEST)
         except KeyError as e:
             return Response({'message': 'transition is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-
