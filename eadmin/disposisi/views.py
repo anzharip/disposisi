@@ -84,6 +84,12 @@ class GroupListAPIView(generics.ListAPIView):
     queryset = Group.objects.all()
 
 
+class GroupDetailAPIView(generics.RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = GroupSerializer
+    queryset = Group.objects.all()
+
+
 def memo_simple_update_state(request, pk):
     memo_simple = get_object_or_404(MemoSimple, pk=pk)
 
