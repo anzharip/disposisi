@@ -94,20 +94,19 @@ def memo_simple_update_state(request, pk):
     memo_simple = get_object_or_404(MemoSimple, pk=pk)
 
 
-# TODO Pagination to limit results
-class MemoSimpleListAPIView(generics.ListCreateAPIView):
+class MemoSimpleLListCreateAPIView(generics.ListCreateAPIView):
+    permission_classes = (IsAuthenticated,)
     queryset = MemoSimple.objects.all()
     serializer_class = MemoSimpleSerializer
 
 
-class MemoSimpleDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+class MemoSimpleRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated,)
     queryset = MemoSimple.objects.all()
     serializer_class = MemoSimpleSerializer
 
 
 # TODO Implement this endpoint dynamically
-# TODO Implement the frontend, serve it from django, but it could be SPA
 class MemoSimpleUpdateStateAPIView(APIView):
     permission_classes = (IsAuthenticated, IsGroupOperasional,)
 
