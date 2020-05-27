@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from django_fsm import TransitionNotAllowed
 
-from .serializers import MemoSimpleSerializer, UserSerializer
+from .serializers import MemoSimpleSerializer, UserSerializer, GroupSerializer
 from .models import MemoSimple
 
 
@@ -76,6 +76,12 @@ class UserInfoView(APIView):
         user_info = get_object_or_404(User, pk=user_id)
         serializer = UserSerializer(user_info)
         return Response(serializer.data)
+
+
+class GroupListAPIView(generics.ListAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = GroupSerializer
+    queryset = Group.objects.all()
 
 
 def memo_simple_update_state(request, pk):

@@ -1,7 +1,8 @@
 from django.urls import path
 
 from .views import MemoSimpleListView, MemoSimpleDetailView, MemoSimpleCreateView, MemoSimpleUpdateView, \
-    memo_simple_update_state, MemoSimpleListAPIView, MemoSimpleDetailAPIView, MemoSimpleUpdateStateAPIView, UserInfoView
+    memo_simple_update_state, MemoSimpleListAPIView, MemoSimpleDetailAPIView, MemoSimpleUpdateStateAPIView, \
+    UserInfoView, GroupListAPIView
 
 app_name = 'disposisi'
 urlpatterns = [
@@ -14,5 +15,6 @@ urlpatterns = [
     path('api/memosimple/<int:pk>/', MemoSimpleDetailAPIView.as_view()),
     path('api/memosimple/<int:pk>/updateState', MemoSimpleUpdateStateAPIView.as_view()),
     path('api/user/', UserInfoView.as_view()),
+    path('api/group/', GroupListAPIView.as_view()),
 
 ]
