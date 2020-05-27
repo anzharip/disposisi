@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth.models import Permission
 
 from .models import Agency, WorkUnit, Position, Account, Attachment, MemoState, MemoType, MemoTrait, MemoCategory, Memo, \
     MemoSimple
@@ -60,3 +61,4 @@ admin.site.register(MemoCategory, MemoCategoryAdmin)
 admin.site.register(Memo, MemoAdmin)
 admin.site.register(Attachment, AttachmentAdmin)
 admin.site.register(MemoSimple)
+admin.site.register(Permission)
