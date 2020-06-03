@@ -111,8 +111,8 @@ class MemoSimpleUpdateStateAPIView(APIView):
         memo_simple = get_object_or_404(MemoSimple, pk=pk)
         try:
             if request.data['transition'] == '0':
-                # if not has_transition_perm(memo_simple.status_perekaman_surat_to_status_distribusi_kabag, request.user):
-                #     raise PermissionDenied
+                if not has_transition_perm(memo_simple.status_perekaman_surat_to_status_distribusi_kabag, request.user):
+                    raise PermissionDenied
                 try:
                     memo_simple.status_perekaman_surat_to_status_distribusi_kabag()
                 except TransitionNotAllowed as e:
@@ -121,9 +121,9 @@ class MemoSimpleUpdateStateAPIView(APIView):
                 serializer = MemoSimpleSerializer(memo_simple)
                 return Response(serializer.data)
             if request.data['transition'] == '1':
-                # if not has_transition_perm(memo_simple.status_distribusi_kabag_to_status_disposisi_kasubag,
-                #                            request.user):
-                #     raise PermissionDenied
+                if not has_transition_perm(memo_simple.status_distribusi_kabag_to_status_disposisi_kasubag,
+                                           request.user):
+                    raise PermissionDenied
                 try:
                     memo_simple.status_distribusi_kabag_to_status_disposisi_kasubag()
                 except TransitionNotAllowed as e:
@@ -132,9 +132,9 @@ class MemoSimpleUpdateStateAPIView(APIView):
                 serializer = MemoSimpleSerializer(memo_simple)
                 return Response(serializer.data)
             if request.data['transition'] == '2':
-                # if not has_transition_perm(memo_simple.status_disposisi_kasubag_to_status_disposisi_pelaksana,
-                #                            request.user):
-                #     raise PermissionDenied
+                if not has_transition_perm(memo_simple.status_disposisi_kasubag_to_status_disposisi_pelaksana,
+                                           request.user):
+                    raise PermissionDenied
                 try:
                     memo_simple.status_disposisi_kasubag_to_status_disposisi_pelaksana()
                 except TransitionNotAllowed as e:
