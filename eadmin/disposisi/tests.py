@@ -27,6 +27,7 @@ USERS_TO_GROUP = [
         "permission": PERMISSIONS[2]
     },
 ]
+USERS_TOKENS = []
 
 MEMOSIMPLES = [
     {
@@ -163,10 +164,10 @@ class MemoSimpleAPITests(APITestCase):
         Create test users
         """
         for user in USERS:
-            pwd = make_password("password_".join(user))
+            pwd = make_password(user)
             new_user = User.objects.create(username=user, password=pwd)
             new_user.save()
-            self.assertTrue(self.client.login(username=user, password="password_".join(user)))
+            self.assertTrue(self.client.login(username=user, password=user))
         """
         Create test groups
         """
@@ -186,10 +187,7 @@ class MemoSimpleAPITests(APITestCase):
             for permission_filter in Permission.objects.filter(name=permission):
                 self.assertTrue(permission_filter, permission)
         """
-        TODO Assign permissions to groups
-        GROUPS = ["tu", "kabag", "kasubag", "operasional"]
-        USERS = ["tu1", "kabag1", "kasubag1", "operasional1"]
-        PERMISSIONS = ["to_status_distribusi_kabag", "to_status_disposisi_kasubag", "to_status_disposisi_pelaksana"]
+        Assign permissions to groups
         """
         group_tu = Group.objects.get(name="tu")
         to_status_distribusi_kabag = Permission.objects.get(name="to_status_distribusi_kabag")
@@ -216,6 +214,21 @@ class MemoSimpleAPITests(APITestCase):
             user.save()
             self.assertTrue(User.objects.get(username=user_to_group["user"]).get_all_permissions(),
                             "disposisi.".join(user_to_group["permission"]))
+
+        """
+        Obtain JWT token for for all users
+        """
+        for user in USERS:
+            url = reverse("token_obtain_pair")
+            response = self.client.post(url, {'username': user, 'password': user}, format='json')
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertTrue('access' in response.data)
+            access_token = response.data['access']
+            user_token = {
+                "user": user,
+                "access_token": access_token
+            }
+            USERS_TOKENS.append(user_token)
 
     def tearDown(self):
         User.objects.all().delete()
@@ -282,7 +295,7 @@ class MemoSimpleAPITests(APITestCase):
             "transition": "0",
         }
 
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + USERS_TOKENS[0]["access_token"])
         response = self.client.put(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         check_model = MemoSimple.objects.get(id=modelpk)
@@ -300,7 +313,7 @@ class MemoSimpleAPITests(APITestCase):
         memosimple_to_status_disposisi_kasubag.save()
 
         """
-        Update state from 0 to 1. 
+        Update state from 0 to 1.
         """
         modelpk = memosimple_to_status_disposisi_kasubag.id
         url = reverse("disposisi:memosimple-api-update-state", kwargs={"pk": modelpk})
@@ -308,14 +321,14 @@ class MemoSimpleAPITests(APITestCase):
             "transition": "0",
         }
 
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + USERS_TOKENS[0]["access_token"])
         response = self.client.put(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         check_model = MemoSimple.objects.get(id=modelpk)
         self.assertIs(check_model.state, 1)
 
         """
-        Update state from 1 to 2. 
+        Update state from 1 to 2.
         """
         modelpk = memosimple_to_status_disposisi_kasubag.id
         url = reverse("disposisi:memosimple-api-update-state", kwargs={"pk": modelpk})
@@ -323,6 +336,7 @@ class MemoSimpleAPITests(APITestCase):
             "transition": "1",
         }
 
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + USERS_TOKENS[1]["access_token"])
         response = self.client.put(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         check_model = MemoSimple.objects.get(id=modelpk)
@@ -334,13 +348,13 @@ class MemoSimpleAPITests(APITestCase):
         :return:
         """
         memosimple_to_status_disposisi_pelaksana = MemoSimple.objects.create(subject="Subject To Disposisi Pelaksana",
-                                                                           information="Information",
-                                                                           sender="Sender")
+                                                                             information="Information",
+                                                                             sender="Sender")
         self.assertIs(memosimple_to_status_disposisi_pelaksana.state, 0)
         memosimple_to_status_disposisi_pelaksana.save()
 
         """
-        Update state from 0 to 1. 
+        Update state from 0 to 1.
         """
         modelpk = memosimple_to_status_disposisi_pelaksana.id
         url = reverse("disposisi:memosimple-api-update-state", kwargs={"pk": modelpk})
@@ -348,14 +362,14 @@ class MemoSimpleAPITests(APITestCase):
             "transition": "0",
         }
 
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + USERS_TOKENS[0]["access_token"])
         response = self.client.put(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         check_model = MemoSimple.objects.get(id=modelpk)
         self.assertIs(check_model.state, 1)
 
         """
-        Update state from 1 to 2. 
+        Update state from 1 to 2.
         """
         modelpk = memosimple_to_status_disposisi_pelaksana.id
         url = reverse("disposisi:memosimple-api-update-state", kwargs={"pk": modelpk})
@@ -363,13 +377,14 @@ class MemoSimpleAPITests(APITestCase):
             "transition": "1",
         }
 
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + USERS_TOKENS[1]["access_token"])
         response = self.client.put(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         check_model = MemoSimple.objects.get(id=modelpk)
         self.assertIs(check_model.state, 2)
 
         """
-        Update state from 2 to 3. 
+        Update state from 2 to 3.
         """
         modelpk = memosimple_to_status_disposisi_pelaksana.id
         url = reverse("disposisi:memosimple-api-update-state", kwargs={"pk": modelpk})
@@ -377,6 +392,7 @@ class MemoSimpleAPITests(APITestCase):
             "transition": "2",
         }
 
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + USERS_TOKENS[2]["access_token"])
         response = self.client.put(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         check_model = MemoSimple.objects.get(id=modelpk)
@@ -388,8 +404,8 @@ class MemoSimpleAPITests(APITestCase):
         :return:
         """
         memosimple_to_invalid_status = MemoSimple.objects.create(subject="Subject To Distribusi Kabag",
-                                                                          information="Information",
-                                                                          sender="Sender")
+                                                                 information="Information",
+                                                                 sender="Sender")
         self.assertIs(memosimple_to_invalid_status.subject, "Subject To Distribusi Kabag")
         self.assertIs(memosimple_to_invalid_status.state, 0)
         memosimple_to_invalid_status.save()
@@ -406,8 +422,123 @@ class MemoSimpleAPITests(APITestCase):
         check_model = MemoSimple.objects.get(id=modelpk)
         self.assertIs(check_model.state, 0)
 
-    def test_change_memosimple_state_with_permission(self):
-        pass
+    def test_change_memosimple_state_to_status_distribusi_kabag_with_wrong_permission(self):
+        """
+        Change state of a memosimple model, from 0 to 1, but with wrong permission.
+        :return:
+        """
+        memosimple_to_status_distribusi_kabag = MemoSimple.objects.create(subject="Subject To Distribusi Kabag",
+                                                                          information="Information",
+                                                                          sender="Sender")
+        self.assertIs(memosimple_to_status_distribusi_kabag.subject, "Subject To Distribusi Kabag")
+        self.assertIs(memosimple_to_status_distribusi_kabag.state, 0)
+        memosimple_to_status_distribusi_kabag.save()
 
-    def test_change_memosimple_state_without_permission(self):
-        pass
+        modelpk = memosimple_to_status_distribusi_kabag.id
+        url = reverse("disposisi:memosimple-api-update-state", kwargs={"pk": modelpk})
+        data = {
+            "transition": "0",
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + USERS_TOKENS[1]["access_token"])
+        response = self.client.put(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        check_model = MemoSimple.objects.get(id=modelpk)
+        self.assertIs(check_model.state, 0)
+
+    def test_change_memosimple_state_to_status_disposisi_kasubag_with_wrong_permission(self):
+        """
+        Change state of a memosimple model, from 1 to 2, but with wrong permission.
+        :return:
+        """
+        memosimple_to_status_disposisi_kasubag = MemoSimple.objects.create(subject="Subject To Disposisi Kasubag",
+                                                                           information="Information",
+                                                                           sender="Sender")
+        self.assertIs(memosimple_to_status_disposisi_kasubag.state, 0)
+        memosimple_to_status_disposisi_kasubag.save()
+
+        """
+        Update state from 0 to 1.
+        """
+        modelpk = memosimple_to_status_disposisi_kasubag.id
+        url = reverse("disposisi:memosimple-api-update-state", kwargs={"pk": modelpk})
+        data = {
+            "transition": "0",
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + USERS_TOKENS[0]["access_token"])
+        response = self.client.put(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        check_model = MemoSimple.objects.get(id=modelpk)
+        self.assertIs(check_model.state, 1)
+
+        """
+        Update state from 1 to 2.
+        """
+        modelpk = memosimple_to_status_disposisi_kasubag.id
+        url = reverse("disposisi:memosimple-api-update-state", kwargs={"pk": modelpk})
+        data = {
+            "transition": "1",
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + USERS_TOKENS[0]["access_token"])
+        response = self.client.put(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        check_model = MemoSimple.objects.get(id=modelpk)
+        self.assertIs(check_model.state, 1)
+
+    def test_change_memosimple_state_to_status_disposisi_pelaksana_with_wrong_permission(self):
+        """
+        Change state of a memosimple model, from 2 to 3, but with the wrong permission.
+        :return:
+        """
+        memosimple_to_status_disposisi_pelaksana = MemoSimple.objects.create(subject="Subject To Disposisi Pelaksana",
+                                                                             information="Information",
+                                                                             sender="Sender")
+        self.assertIs(memosimple_to_status_disposisi_pelaksana.state, 0)
+        memosimple_to_status_disposisi_pelaksana.save()
+
+        """
+        Update state from 0 to 1.
+        """
+        modelpk = memosimple_to_status_disposisi_pelaksana.id
+        url = reverse("disposisi:memosimple-api-update-state", kwargs={"pk": modelpk})
+        data = {
+            "transition": "0",
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + USERS_TOKENS[0]["access_token"])
+        response = self.client.put(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        check_model = MemoSimple.objects.get(id=modelpk)
+        self.assertIs(check_model.state, 1)
+
+        """
+        Update state from 1 to 2.
+        """
+        modelpk = memosimple_to_status_disposisi_pelaksana.id
+        url = reverse("disposisi:memosimple-api-update-state", kwargs={"pk": modelpk})
+        data = {
+            "transition": "1",
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + USERS_TOKENS[1]["access_token"])
+        response = self.client.put(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        check_model = MemoSimple.objects.get(id=modelpk)
+        self.assertIs(check_model.state, 2)
+
+        """
+        Update state from 2 to 3.
+        """
+        modelpk = memosimple_to_status_disposisi_pelaksana.id
+        url = reverse("disposisi:memosimple-api-update-state", kwargs={"pk": modelpk})
+        data = {
+            "transition": "2",
+        }
+
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + USERS_TOKENS[3]["access_token"])
+        response = self.client.put(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        check_model = MemoSimple.objects.get(id=modelpk)
+        self.assertIs(check_model.state, 2)
