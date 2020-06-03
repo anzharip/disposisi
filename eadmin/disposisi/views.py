@@ -7,8 +7,9 @@ from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 
-from django_fsm import TransitionNotAllowed
+from django_fsm import TransitionNotAllowed, has_transition_perm
 
 from .serializers import MemoSimpleSerializer, UserSerializer, GroupSerializer
 from .models import MemoSimple
@@ -90,11 +91,7 @@ class GroupDetailAPIView(generics.RetrieveAPIView):
     queryset = Group.objects.all()
 
 
-def memo_simple_update_state(request, pk):
-    memo_simple = get_object_or_404(MemoSimple, pk=pk)
-
-
-class MemoSimpleLListCreateAPIView(generics.ListCreateAPIView):
+class MemoSimpleListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
     queryset = MemoSimple.objects.all()
     serializer_class = MemoSimpleSerializer
@@ -108,20 +105,25 @@ class MemoSimpleRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIVi
 
 # TODO Implement this endpoint dynamically
 class MemoSimpleUpdateStateAPIView(APIView):
-    permission_classes = (IsAuthenticated, IsGroupOperasional,)
+    permission_classes = (IsAuthenticated,)
 
     def put(self, request, pk):
         memo_simple = get_object_or_404(MemoSimple, pk=pk)
         try:
             if request.data['transition'] == '0':
+                # if not has_transition_perm(memo_simple.status_perekaman_surat_to_status_distribusi_kabag, request.user):
+                #     raise PermissionDenied
                 try:
                     memo_simple.status_perekaman_surat_to_status_distribusi_kabag()
                 except TransitionNotAllowed as e:
-                    return Response({'message': 'Transition is not allowed'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'message': 'Transition is not allowed'}, status=status.HTTP_410_GONE)
                 memo_simple.save()
                 serializer = MemoSimpleSerializer(memo_simple)
                 return Response(serializer.data)
             if request.data['transition'] == '1':
+                # if not has_transition_perm(memo_simple.status_distribusi_kabag_to_status_disposisi_kasubag,
+                #                            request.user):
+                #     raise PermissionDenied
                 try:
                     memo_simple.status_distribusi_kabag_to_status_disposisi_kasubag()
                 except TransitionNotAllowed as e:
@@ -130,6 +132,9 @@ class MemoSimpleUpdateStateAPIView(APIView):
                 serializer = MemoSimpleSerializer(memo_simple)
                 return Response(serializer.data)
             if request.data['transition'] == '2':
+                # if not has_transition_perm(memo_simple.status_disposisi_kasubag_to_status_disposisi_pelaksana,
+                #                            request.user):
+                #     raise PermissionDenied
                 try:
                     memo_simple.status_disposisi_kasubag_to_status_disposisi_pelaksana()
                 except TransitionNotAllowed as e:
