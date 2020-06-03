@@ -172,15 +172,18 @@ class MemoSimple(models.Model):
     def get_absolute_url(self):
         return reverse('disposisi:memo-simple-list')
 
-    @transition(field=state, source=STATUS_PEREKAMAN_SURAT, target=STATUS_DISTRIBUSI_KABAG)
+    @transition(field=state, source=STATUS_PEREKAMAN_SURAT, target=STATUS_DISTRIBUSI_KABAG,
+                permission='disposisi.to_status_distribusi_kabag')
     def status_perekaman_surat_to_status_distribusi_kabag(self):
         pass
 
-    @transition(field=state, source=STATUS_DISTRIBUSI_KABAG, target=STATUS_DISPOSISI_KASUBAG)
+    @transition(field=state, source=STATUS_DISTRIBUSI_KABAG, target=STATUS_DISPOSISI_KASUBAG,
+                permission='disposisi.to_status_disposisi_kasubag')
     def status_distribusi_kabag_to_status_disposisi_kasubag(self):
         pass
 
-    @transition(field=state, source=STATUS_DISPOSISI_KASUBAG, target=STATUS_DISPOSISI_PELAKSANA)
+    @transition(field=state, source=STATUS_DISPOSISI_KASUBAG, target=STATUS_DISPOSISI_PELAKSANA,
+                permission='disposisi.to_status_disposisi_pelaksana')
     def status_disposisi_kasubag_to_status_disposisi_pelaksana(self):
         pass
 
